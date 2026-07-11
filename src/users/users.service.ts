@@ -12,8 +12,9 @@ export class UsersService {
   create() {
     return this.prisma.user.create({
       data: {
-        name: "John Doe",
-        email: "john@example.com",
+        full_name: 'John Doe',
+        email: 'john@example.com',
+        password_hash: 'temporary-hash',
       },
     }); 
   }
