@@ -2,6 +2,8 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { QueryProductDto } from './dto/query-products.dto';
+import { contains } from 'class-validator';
 
 @Injectable()
 export class ProductsService {
@@ -27,17 +29,72 @@ export class ProductsService {
         });
       }
 
-    async findAll() {
+    async findAll(query: QueryProductDto) {
+      const {
+        search,
+        category,
+        availability,
+        page,
+        limit,
+      } = query;
+
+      const currentPage = page ?? 1;
+      const currentLimit = limit ?? 10;
+
+      const skip = (currentPage - 1) * currentLimit;
+
+      const where: any = {}
+      if (search) {
+        where.product_name = {
+          contains: search,
+          mode: 'insensitive',
+        };
+      }
+
+      if (category) {
+        where.category_id = category;
+      }
+
+      if (availability === 'OUT_OF_STOCK') {
+        where.stock_quantity = 0;
+      }
+      
+      if (availability === 'LOW_STOCK') {
+        where.stock_quantity = {
+          gt: 0,
+          lte: 20,
+        };
+      }
+      
+      if (availability === 'IN_STOCK') {
+        where.stock_quantity = {
+          gt: 20,
+        };
+      }
+      const total = await this.prisma.product.count({
+        where,
+      });
       const products = await this.prisma.product.findMany({
+        where,
         include: {
             category: true,
           },
+        skip,
+        take: currentLimit,
         });
-        return products.map(product => ({
+        return{ data: products.map(product => ({
           ...product,
           stock_status: this.getStockStatus(product.stock_quantity),
-        }));
-      }
+        })),
+
+        meta: {
+          total,
+          page: currentPage,
+          limit: currentLimit,
+          totalPages: Math.ceil(total /currentLimit),
+        },
+      };
+    }
 
     async findOne(product_id: number) {
       const product = await this.prisma.product.findUnique({
