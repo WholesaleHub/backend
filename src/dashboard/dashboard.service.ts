@@ -13,7 +13,7 @@ export class DashboardService {
         const lowStockProducts = await this.prisma.product.count({
           where: {
             stock_quantity: {
-              lte: 10,
+              lte: 20,
             },
           },
         });
