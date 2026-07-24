@@ -4,9 +4,12 @@ import {
     IsOptional,
     IsString,
     MinLength,
-    isEmail,
-    isString,
+    IsEnum,
 } from 'class-validator'
+export enum UserRole {
+    RETAILER = 'RETAILER',
+    WHOLESALER = 'WHOLESALER',
+  }
 
 export class RegisterDto {
     @IsString()
@@ -23,4 +26,7 @@ export class RegisterDto {
     @IsOptional()
     @IsString()
     phone?: string;
+
+    @IsEnum(UserRole)
+    role: UserRole;
 }
