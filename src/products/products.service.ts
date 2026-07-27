@@ -3,10 +3,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductDto } from './dto/query-products.dto';
+import { ImageService } from '../common/images/image.service';
+import { extname } from 'path';
+import * as fs from 'fs/promises';
 
 @Injectable()
 export class ProductsService {
-    constructor(private prisma: PrismaService) {}
+    constructor(      
+      private readonly prisma: PrismaService,
+      private readonly imageService: ImageService,
+    ) {}
     private getStockStatus(stock: number): string {
       if (stock === 0) {
         return 'OUT_OF_STOCK';
@@ -19,12 +25,41 @@ export class ProductsService {
       return 'IN_STOCK';
     }
 
-    async create(createProductDto: CreateProductDto) {
+    async create(createProductDto: CreateProductDto,   file?: Express.Multer.File,) {
+      const category = await this.prisma.category.findUnique({
+        where: {
+          category_id: createProductDto.category_id,
+        },
+      });
+      
+      if (!category) {
+        throw new NotFoundException('Category not found');
+      }
+      const image_url = file
+        ? `/uploads/products/${file.filename}`
+        : null;      
+
+      if (file) {
+        const ext = extname(file.path).toLowerCase();
+
+        const tempPath =
+          file.path.replace(extname(file.path), '') + `.tmp${ext}`;
+        
+        await this.imageService.resizeProductImage(
+          file.path,
+          tempPath,
+          );
+        await fs.unlink(file.path);
+
+        await fs.rename(tempPath, file.path);
+        }
+        
       return this.prisma.product.create({
         data: {
           ...createProductDto,
+          image_url,
           status: 'ACTIVE',
-        }
+        },
         });
       }
 

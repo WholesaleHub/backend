@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsOptional, IsString, MaxLength, IsInt, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateProductDto {
   @IsString()
@@ -11,14 +12,17 @@ export class CreateProductDto {
   @MaxLength(100)
   sku: string;
 
+  @Type(() => Number)
   @IsInt()
   @IsNotEmpty()
   category_id: number;
 
+  @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
   unit_price: number;
 
+  @Type(() => Number)
   @IsInt()
   @IsNotEmpty()
   stock_quantity: number;
@@ -26,5 +30,15 @@ export class CreateProductDto {
   @IsString()
   @IsOptional()
   @MaxLength(20)
-  status?: string;  
+  status?: string;
+  
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  image_url?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  description?: string;
 }
