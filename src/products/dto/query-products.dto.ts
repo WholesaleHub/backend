@@ -3,7 +3,7 @@ import {
     IsInt,
     IsOptional,
     IsString,
-    Min,
+    Min,MaxLength,
 } from 'class-validator'
 
 export class QueryProductDto {
@@ -31,4 +31,14 @@ export class QueryProductDto {
     @IsInt()
     @Min(1)
     limit: number = 10;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(255)
+    image_url?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(1000)
+    description?: string;
 }
