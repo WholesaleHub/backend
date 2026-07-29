@@ -4,7 +4,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductDto } from './dto/query-products.dto';
 import { ImageService } from '../common/images/image.service';
-import { extname } from 'path';
+import { extname, join } from 'path';
 import * as fs from 'fs/promises';
 
 @Injectable()
@@ -24,7 +24,50 @@ export class ProductsService {
     
       return 'IN_STOCK';
     }
-
+    
+    private async processProductImage(
+      file: Express.Multer.File,
+    ): Promise<string> {
+      const extension = extname(file.path).toLowerCase();
+    
+      const temporaryPath =
+        file.path.replace(extname(file.path), '') +
+        `.tmp${extension}`;
+    
+      await this.imageService.resizeProductImage(
+        file.path,
+        temporaryPath,
+      );
+    
+      await fs.unlink(file.path);
+      await fs.rename(temporaryPath, file.path);
+    
+      return `/uploads/products/${file.filename}`;
+    }
+    
+    private async deleteProductImage(
+      imageUrl: string | null,
+    ): Promise<void> {
+      if (
+        !imageUrl ||
+        !imageUrl.startsWith('/uploads/products/')
+      ) {
+        return;
+      }
+    
+      const relativePath = imageUrl.replace(/^\/+/, '');
+      const absolutePath = join(process.cwd(), relativePath);
+    
+      try {
+        await fs.unlink(absolutePath);
+      } catch (error) {
+        const fileError = error as NodeJS.ErrnoException;
+    
+        if (fileError.code !== 'ENOENT') {
+          throw error;
+        }
+      }
+    }
     async create(createProductDto: CreateProductDto,   file?: Express.Multer.File,) {
       const category = await this.prisma.category.findUnique({
         where: {
@@ -36,23 +79,8 @@ export class ProductsService {
         throw new NotFoundException('Category not found');
       }
       const image_url = file
-        ? `/uploads/products/${file.filename}`
-        : null;      
-
-      if (file) {
-        const ext = extname(file.path).toLowerCase();
-
-        const tempPath =
-          file.path.replace(extname(file.path), '') + `.tmp${ext}`;
-        
-        await this.imageService.resizeProductImage(
-          file.path,
-          tempPath,
-          );
-        await fs.unlink(file.path);
-
-        await fs.rename(tempPath, file.path);
-        }
+        ? await this.processProductImage(file)
+        : null;
         
       return this.prisma.product.create({
         data: {
@@ -146,21 +174,96 @@ export class ProductsService {
       };
       }
 
-    async update(product_id: number, updateProductDto: UpdateProductDto) {
-      if (
-        updateProductDto.stock_quantity !== undefined &&
-      updateProductDto.stock_quantity < 0
-    ){
-      throw new BadRequestException(
-        'Stock quantity cannot be negative',
-      );
-    }
-      return this.prisma.product.update({
-          where: {
-            product_id,
-          },
-          data: updateProductDto,
-        });
+    async update(
+      product_id: number,
+      updateProductDto: UpdateProductDto,
+      file?: Express.Multer.File,
+      ) {
+        const existingProduct =
+          await this.prisma.product.findUnique({
+            where: {
+              product_id,
+            },
+          });
+      
+        if (!existingProduct) {
+          throw new NotFoundException('Product not found');
+        }
+      
+        if (
+          updateProductDto.stock_quantity !== undefined &&
+          updateProductDto.stock_quantity < 0
+        ) {
+          throw new BadRequestException(
+            'Stock quantity cannot be negative',
+          );
+        }
+      
+        if (updateProductDto.category_id !== undefined) {
+          const category =
+            await this.prisma.category.findUnique({
+              where: {
+                category_id: updateProductDto.category_id,
+              },
+            });
+      
+        if (!category) {
+          throw new NotFoundException(
+              'Category not found',
+            );
+          }
+        }
+      
+        const {
+          remove_image,
+          ...productData
+        } = updateProductDto;
+      
+        let nextImageUrl: string | null | undefined;
+      
+        if (file) {
+          nextImageUrl =
+            await this.processProductImage(file);
+        } else if (remove_image === true) {
+          nextImageUrl = null;
+        }
+      
+        const updatedProduct =
+          await this.prisma.product.update({
+            where: {
+              product_id,
+            },
+            data: {
+              ...productData,
+              ...(nextImageUrl !== undefined
+                ? { image_url: nextImageUrl }
+                : {}),
+            },
+            include: {
+              category: true,
+            },
+          });
+      
+        const imageWasChanged =
+          file !== undefined || remove_image === true;
+      
+        if (
+          imageWasChanged &&
+          existingProduct.image_url &&
+          existingProduct.image_url !==
+            updatedProduct.image_url
+        ) {
+          await this.deleteProductImage(
+            existingProduct.image_url,
+          );
+        }
+      
+        return {
+          ...updatedProduct,
+          stock_status: this.getStockStatus(
+            updatedProduct.stock_quantity,
+          ),
+        };
       }
 
     async remove(product_id: number) {
