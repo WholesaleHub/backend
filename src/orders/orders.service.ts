@@ -45,30 +45,39 @@ export class OrdersService {
           (sum, item) => sum + item.product.unit_price * item.quantity,
           0,
           );
-          return this.prisma.$transaction(async (tx) => ({
-          data: {
-            customer_id,
-      
-            // Temporary value until JWT authentication is wired in
-            created_by_user_id: '58d34595-7144-4208-88b8-20061fcb779c',
-            total_amount: totalAmount,
-      
-            orderItems: {
-              create: validatedItems.map(({product, quantity} ) => ({
+        return this.prisma.$transaction(async (tx) => {
+          for (const { product, quantity } of validatedItems) {
+            await tx.product.update({
+              where: {
                 product_id: product.product_id,
-                quantity,
-                unit_price: product.unit_price,
-                subtotal: product.unit_price * quantity,      
-               
-              })),              
+              },
+              data: {
+                stock_quantity: {
+                  decrement: quantity,
+                },
+              },
+            });
+          }
+          return tx.order.create({
+            data: {
+              customer_id,
+              created_by_user_id: '58d34595-7144-4208-88b8-20061fcb779c',
+              total_amount: totalAmount,       
+              orderItems: {
+                create: validatedItems.map(({ product, quantity }) => ({
+                  product_id: product.product_id,
+                  quantity,
+                  unit_price: product.unit_price,
+                  subtotal: product.unit_price * quantity,
+                })),
+              },
+            },     
+            include: {
+              customer: true,
+              orderItems: true,
             },
-          },
-      
-          include: {
-            customer: true,
-            orderItems: true,
-          },
-        }));      
+          });
+        }); 
       }
     
     async findAll() {
