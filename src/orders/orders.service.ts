@@ -15,7 +15,7 @@ type ValidatedItem = {
 export class OrdersService {
     constructor(private prisma: PrismaService) {}
 
-    async create(createOrderDto: CreateOrderDto) {      
+    async create(createOrderDto: CreateOrderDto, user_id: string) {      
         const { customer_id, items } = createOrderDto;      
         
         const validatedItems: ValidatedItem[] = [];
@@ -61,7 +61,7 @@ export class OrdersService {
           return tx.order.create({
             data: {
               customer_id,
-              created_by_user_id: '58d34595-7144-4208-88b8-20061fcb779c',
+              created_by_user_id: user_id,
               total_amount: totalAmount,       
               orderItems: {
                 create: validatedItems.map(({ product, quantity }) => ({
@@ -93,7 +93,25 @@ export class OrdersService {
           },
         });
       }
-    
+    async findMyOrders(customerId: number) {
+      return this.prisma.order.findMany({
+        where: {
+          customer_id: customerId,
+        },
+        include: {
+          orderItems: {
+            include: {
+              product: true,
+            },
+          },
+          customer: true,
+        },
+        orderBy: {
+          order_date: 'desc',
+        },
+      });
+    }
+
     async findOne(id: number) {
       return this.prisma.order.findUnique({
           where: {

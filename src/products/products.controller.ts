@@ -14,7 +14,6 @@ import {
   } from '@nestjs/common';
 
 import { FileInterceptor } from '@nestjs/platform-express';
-import { extname } from 'path';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';

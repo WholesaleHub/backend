@@ -7,23 +7,32 @@ import {
     Patch,
     Post,
     UseGuards,
+    Req,
   } from '@nestjs/common';
   import { OrdersService } from './orders.service';
   import { CreateOrderDto } from './dto/create-order.dto';
   import { UpdateOrderDto } from './dto/update-order.dto';
   import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
-  import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-  import { UserRole } from 'src/auth/dto/register.dto';
-  import { Roles } from 'src/auth/decorators/roles.decorator';
-  import { RolesGuard } from 'src/auth/guards/roles.guard';
+  import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+  import { UserRole } from '../auth/dto/register.dto';
+  import { Roles } from '../auth/decorators/roles.decorator';
+  import { RolesGuard } from '../auth/guards/roles.guard';
   
   @Controller('orders')
   export class OrdersController {
     constructor(private readonly ordersService: OrdersService) {}
   
     @Post()
-    create(@Body() createOrderDto: CreateOrderDto) {
-      return this.ordersService.create(createOrderDto);
+    create(@Body() createOrderDto: CreateOrderDto, @Req() req,) {
+      return this.ordersService.create(createOrderDto, req.user.user_id);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('my-orders')
+    findMyOrders(@Req() req) {
+      return this.ordersService.findMyOrders(
+        req.user.customerId,
+      );
     }
   
     @Get()
