@@ -8,6 +8,7 @@ import {
     Post,
     UseGuards,
     Req,
+    Query,    
   } from '@nestjs/common';
   import { OrdersService } from './orders.service';
   import { CreateOrderDto } from './dto/create-order.dto';
@@ -17,6 +18,7 @@ import {
   import { UserRole } from '../auth/dto/register.dto';
   import { Roles } from '../auth/decorators/roles.decorator';
   import { RolesGuard } from '../auth/guards/roles.guard';
+  import { OrderStatus } from '@prisma/client';
   
   @Controller('orders')
   export class OrdersController {
@@ -34,6 +36,21 @@ import {
         req.user.customerId,
       );
     }
+
+    @Roles('ADMIN')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get()
+    findAllOrders(
+    @Query('status') status?: OrderStatus,
+    @Query('customer') customer?: string,
+    @Query('sort') sort?: 'asc' | 'desc',
+    ) {
+  return this.ordersService.findAllOrders(
+    status,
+    customer,
+    sort,
+  );
+}
   
     @Get()
     findAll() {

@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { OrderStatus } from '@prisma/client';
 
 type ValidatedItem = {
   product: NonNullable<
@@ -128,6 +129,45 @@ export class OrdersService {
           },
         });
       }
+
+    async findAllOrders(
+      status?: OrderStatus,
+      customer?: string,
+      sort: 'asc' | 'desc' = 'desc',
+    ) {
+      const where: any = {};
+      if (status) {
+        where.status = status;
+      }
+
+      if (customer) {
+        where.customer = {
+          business_name: {
+            contains: customer,
+            mode: 'insensitive',
+          },
+        };
+      }
+      return this.prisma.order.findMany({
+        where,
+      
+        include: {
+          customer: true,
+      
+          orderItems: {
+            include: {
+              product: true,
+            },
+          },
+      
+          createdBy: true,
+        },
+      
+        orderBy: {
+          order_date: sort,
+        },
+      });
+    }
 
     async update(id: number, updateOrderDto: UpdateOrderDto) {
       return this.prisma.order.update({
