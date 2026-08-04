@@ -25,8 +25,9 @@ import {
     constructor(private readonly ordersService: OrdersService) {}
   
     @Post()
+    @UseGuards(JwtAuthGuard)
     create(@Body() createOrderDto: CreateOrderDto, @Req() req,) {
-      return this.ordersService.create(createOrderDto, req.user.user_id);
+      return this.ordersService.create(createOrderDto, req.user.userId,);
     }
 
     @UseGuards(JwtAuthGuard)
