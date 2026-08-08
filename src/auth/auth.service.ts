@@ -4,7 +4,7 @@ import { Injectable,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { RegisterDto } from './dto/register.dto';
+import { RegisterDto, UserRole } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 
@@ -28,27 +28,39 @@ export class AuthService {
             throw new ConflictException('Email already exists');
         }
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await this.prisma.user.create({
-            data: {
-                full_name: fullName,
-                email,
-                password_hash: hashedPassword,
-                phone,
-                role,
-            },                      
+        return this.prisma.$transaction(async (tx) => {
+            const user = await tx.user.create({
+                data: {
+                    full_name: fullName,
+                    email,
+                    password_hash: hashedPassword,
+                    phone,
+                    role,
+                },
+            });
+            if (role === UserRole.RETAILER) {
+                await tx.customer.create({
+                    data: {
+                        user_id: user.id,
+                        business_name: fullName,
+                        business_location: '',
+                        contact_person: fullName,
+                        phone: phone ?? '',
+                    },
+                });
+            }
+            return {
+                 message: 'User registered successfully',
+                 user: {
+                    id: user.id,
+                    fullName: user.full_name,
+                    email: user.email,
+                    phone: user.phone,
+                    role: user.role,
+                    status: user.status,
+                },
+            };
         });
-        return {
-            message: 'User registered successfully',
-            user: {
-                id: user.id,
-                fullName: user.full_name,
-                email: user.email,
-                phone: user.phone,
-                role: user.role,
-                status: user.status,
-            },
-        };
-        
     }
 
     async login(loginDto: LoginDto){
