@@ -4,6 +4,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from '@prisma/client';
+import { use } from 'passport';
 
 type ValidatedItem = {
   product: NonNullable<
@@ -16,8 +17,10 @@ type ValidatedItem = {
 export class OrdersService {
     constructor(private prisma: PrismaService) {}
 
-    async create(createOrderDto: CreateOrderDto, user_id: string) {      
-        const { customer_id, items } = createOrderDto;      
+    async create(createOrderDto: CreateOrderDto, user: any) {      
+        const { items } = createOrderDto;   
+        const customerId = user.customerId;
+        const userId = user.userId;   
         
         const validatedItems: ValidatedItem[] = [];
         // Validate every ordered product
@@ -61,8 +64,8 @@ export class OrdersService {
           }
           return tx.order.create({
             data: {
-              customer_id,
-              created_by_user_id: user_id,
+              customer_id: customerId,
+              created_by_user_id: userId,
               total_amount: totalAmount,       
               orderItems: {
                 create: validatedItems.map(({ product, quantity }) => ({
