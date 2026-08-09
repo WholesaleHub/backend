@@ -1,10 +1,11 @@
-import { Controller, Post, Get, Patch, Param, Body, Req,UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Param, Body, Req,UseGuards, Query } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../auth/dto/register.dto';
+import { QueryCustomersDto } from './dto/query-customers.dto';
 
 @Controller('customers')
 export class CustomersController {
@@ -17,9 +18,11 @@ export class CustomersController {
         return 'Create customer';
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMIN)
     @Get()
-    findAll(){
-        return 'Find all customers';
+    findAll(@Query() query: QueryCustomersDto) {
+        return this.customersService.findAll(query);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -45,6 +48,18 @@ export class CustomersController {
         return this.customersService.findOne(+id);
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMIN)
+    @Get(':id/orders')
+    findCustomerOrders(@Param('id') id: string) {
+        return this.customersService.findCustomerOrders(+id);
+    }
+
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMIN)
     @Patch(':id/status')
-    changeStatus(){}
+    changeStatus(@Param('id') id: string, @Body('status') status: string,) {
+        return this.customersService.changeStatus(+id, status);
+    }
 }

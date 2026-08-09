@@ -14,6 +14,10 @@ enum OrderStatus {
   DELIVERED
   CANCELLED
 }
+enum CustomerStatus {
+  ACTIVE
+  SUSPENDED
+}
 model User {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   full_name     String   @db.VarChar(100)
@@ -35,7 +39,7 @@ model Customer {
   business_location String
   contact_person    String
   phone             String
-  status            String   @default("ACTIVE")
+  status CustomerStatus @default(ACTIVE)
   created_at        DateTime @default(now())
 
   user   User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
