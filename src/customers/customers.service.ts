@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { QueryCustomersDto } from './dto/query-customers.dto';
+import { CustomerStatus } from '@prisma/client';
 
 @Injectable()
 export class CustomersService {
@@ -131,17 +132,10 @@ export class CustomersService {
         });
     }
 
-    async changeStatus(id: number, status: string) {
-      const customer = await this.prisma.customer.findUnique({
-        where: {
-          customer_id: id,
-        },
-      });
-    
-      if (!customer) {
-        throw new NotFoundException('Customer not found');
-      }
-    
+    async changeStatus(
+      id: number,
+      status: CustomerStatus,
+    ) {
       return this.prisma.customer.update({
         where: {
           customer_id: id,
@@ -149,12 +143,9 @@ export class CustomersService {
         data: {
           status,
         },
-        include: {
-          user: true,
-        },
       });
     }
-
+    
     async findCustomerOrders(customerId: number) {
       const customer = await this.prisma.customer.findUnique({
         where: {
