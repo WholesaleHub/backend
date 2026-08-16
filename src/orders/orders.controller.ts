@@ -39,7 +39,7 @@ import {
       );
     }
 
-    @Roles('ADMIN')
+    @Roles(UserRole.ADMIN, UserRole.WHOLESALER)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Get()
     findAllOrders(
@@ -52,12 +52,8 @@ import {
     customer,
     sort,
   );
-}
-  
-    @Get()
-    findAll() {
-      return this.ordersService.findAll();
-    }
+}  
+   
   
     @Get(':id')
     findOne(@Param('id') id: string) {
