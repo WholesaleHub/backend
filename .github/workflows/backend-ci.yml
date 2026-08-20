@@ -3,7 +3,7 @@ name: Backend CI
 on:
   push:
     branches:
-     - develop
+      - develop
   pull_request:
     branches:
       - develop
@@ -11,24 +11,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-  steps:
-    - name: checkout code
-      uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '24'
-        cache: 'npm'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run:  npm ci
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
 
-    - name: Generate Prisma Client
-      run:  npx prisma generate
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Build backend
-      run:  npm run build
+      - name: Generate Prisma Client
+        run: npx prisma generate
 
-    - name: Run tests
-      run:  npm test  -- --runInBand
+      - name: Build backend
+        run: npm run build
+
+      - name: Run tests
+        run: npm test -- --runInBand
