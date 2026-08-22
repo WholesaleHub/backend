@@ -27,7 +27,7 @@ async function bootstrap() {
     prefix: '/uploads',
   });
   const uploadsPath = join(__dirname, '..', 'uploads');
-  
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

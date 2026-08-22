@@ -1,33 +1,33 @@
 import {
-    IsEmail,
-    IsNotEmpty,
-    IsOptional,
-    IsString,
-    MinLength,
-    IsEnum,
-} from 'class-validator'
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+  IsEnum,
+} from 'class-validator';
 export enum UserRole {
-    RETAILER = 'RETAILER',
-    WHOLESALER = 'WHOLESALER',
-    ADMIN = 'ADMIN',
-  }
+  RETAILER = 'RETAILER',
+  WHOLESALER = 'WHOLESALER',
+  ADMIN = 'ADMIN',
+}
 
 export class RegisterDto {
-    @IsString()
-    @IsNotEmpty()
-    fullName: string;
+  @IsString()
+  @IsNotEmpty()
+  fullName: string;
 
-    @IsEmail()
-    email: string;
+  @IsEmail()
+  email: string;
 
-    @IsString()
-    @MinLength(8)
-    password: string;
+  @IsString()
+  @MinLength(8)
+  password: string;
 
-    @IsOptional()
-    @IsString()
-    phone?: string;
+  @IsOptional()
+  @IsString()
+  phone?: string;
 
-    @IsEnum(UserRole)
-    role: UserRole;
+  @IsEnum(UserRole)
+  role: UserRole;
 }

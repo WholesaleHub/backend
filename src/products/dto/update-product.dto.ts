@@ -3,9 +3,7 @@ import { Transform } from 'class-transformer';
 import { IsBoolean, IsOptional } from 'class-validator';
 import { CreateProductDto } from './create-product.dto';
 
-
-export class UpdateProductDto extends PartialType(CreateProductDto,
-) {
+export class UpdateProductDto extends PartialType(CreateProductDto) {
   @IsOptional()
   @Transform(({ value }) => {
     if (value === true || value === 'true') {
