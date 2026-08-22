@@ -7,26 +7,24 @@ import { DashboardService } from './dashboard.service';
 
 @Controller('dashboard')
 export class DashboardController {
-    constructor(
-        private readonly dashboardService: DashboardService,
-    ) {}
+  constructor(private readonly dashboardService: DashboardService) {}
 
-    @Get('stats')
-    getStats() {
-        return this.dashboardService.getStats();
+  @Get('stats')
+  getStats() {
+    return this.dashboardService.getStats();
   }
 
-    @Roles('ADMIN')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Get('admin/stats')
-    getDashboardStats() {
-        return this.dashboardService.getDashboardStats();
-    }
+  @Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('admin/stats')
+  getDashboardStats() {
+    return this.dashboardService.getDashboardStats();
+  }
 
-    @Get('customer')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.RETAILER)
-    getCustomerDashboard(@Req() req) {
-        return this.dashboardService.getCustomerDashboard(req.user);
-    }
+  @Get('customer')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.RETAILER)
+  getCustomerDashboard(@Req() req) {
+    return this.dashboardService.getCustomerDashboard(req.user);
+  }
 }

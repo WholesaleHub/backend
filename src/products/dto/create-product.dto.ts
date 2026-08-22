@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsOptional, IsString, MaxLength, IsInt, IsNumber } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  IsInt,
+  IsNumber,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateProductDto {
@@ -31,7 +38,7 @@ export class CreateProductDto {
   @IsOptional()
   @MaxLength(20)
   status?: string;
-  
+
   @IsOptional()
   @IsString()
   @MaxLength(255)
