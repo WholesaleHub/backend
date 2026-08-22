@@ -11,16 +11,7 @@ import { OrdersModule } from './orders/orders.module';
 import { CustomersModule } from './customers/customers.module';
 
 @Module({
-  imports: [
-    PrismaModule,
-    AuthModule,
-    CategoriesModule,
-    ProductsModule,
-    DashboardModule,
-    ImageModule,
-    OrdersModule,
-    CustomersModule,
-  ],
+  imports: [PrismaModule, AuthModule, CategoriesModule, ProductsModule, DashboardModule, ImageModule, OrdersModule, CustomersModule],
   controllers: [AppController],
   providers: [AppService],
 })
