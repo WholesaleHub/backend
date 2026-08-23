@@ -20,7 +20,9 @@ async function bootstrap() {
 
   app.useGlobalFilters(new HttpExceptionFilter());
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173',
+            'https://frontend-blue-nu-32.vercel.app'
+    ],
     credentials: true,
   });
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
