@@ -9,9 +9,10 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { ImageModule } from './common/images/image.module';
 import { OrdersModule } from './orders/orders.module';
 import { CustomersModule } from './customers/customers.module';
+import { CartModule } from './cart/cart.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, CategoriesModule, ProductsModule, DashboardModule, ImageModule, OrdersModule, CustomersModule],
+  imports: [PrismaModule, AuthModule, CategoriesModule, ProductsModule, DashboardModule, ImageModule, OrdersModule, CustomersModule, CartModule],
   controllers: [AppController],
   providers: [AppService],
 })
