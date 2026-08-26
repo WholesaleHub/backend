@@ -4,7 +4,6 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from '@prisma/client';
-import { use } from 'passport';
 
 type ValidatedItem = {
   product: NonNullable<
@@ -51,9 +50,12 @@ export class OrdersService {
     );
     return this.prisma.$transaction(async (tx) => {
       for (const { product, quantity } of validatedItems) {
-        await tx.product.update({
+        const updated = await tx.product.updateMany({
           where: {
             product_id: product.product_id,
+            stock_quantity: {
+              gte: quantity,
+            },
           },
           data: {
             stock_quantity: {
@@ -61,6 +63,12 @@ export class OrdersService {
             },
           },
         });
+        
+        if (updated.count !== 1) {
+          throw new BadRequestException(
+            `Insufficient stock for "${product.product_name}".`,
+          );
+        }
       }
       return tx.order.create({
         data: {

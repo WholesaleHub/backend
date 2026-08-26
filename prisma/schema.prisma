@@ -21,17 +21,20 @@ model User {
 }
 
 model Customer {
-  customer_id       Int      @id @default(autoincrement())
-  user_id           String   @unique @db.Uuid
+  customer_id       Int            @id @default(autoincrement())
+  user_id           String         @unique @db.Uuid
   business_name     String
   business_location String
   contact_person    String
   phone             String
-  status CustomerStatus @default(ACTIVE)
-  created_at        DateTime @default(now())
-  user              User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  orders            Order[]
+  status            CustomerStatus @default(ACTIVE)
+  created_at        DateTime       @default(now())
+
+  user   User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  orders Order[]
+  cart   Cart?
 }
+
 enum CustomerStatus {
   ACTIVE
   SUSPENDED
@@ -46,18 +49,20 @@ model Category {
 }
 
 model Product {
-  product_id     Int         @id @default(autoincrement())
+  product_id     Int      @id @default(autoincrement())
   product_name   String
-  sku            String      @unique
+  sku            String   @unique
   category_id    Int
-  unit_price     Decimal     @db.Decimal(10, 2)
+  unit_price     Decimal  @db.Decimal(10, 2)
   stock_quantity Int
-  status         String      @default("ACTIVE")
-  created_at     DateTime    @default(now())
-  description    String?     @db.VarChar(1000)
-  image_url      String?     @db.VarChar(255)
-  orderItems     OrderItem[]
-  category       Category    @relation(fields: [category_id], references: [category_id])
+  status         String   @default("ACTIVE")
+  created_at     DateTime @default(now())
+  description    String?  @db.VarChar(1000)
+  image_url      String?  @db.VarChar(255)
+
+  category   Category    @relation(fields: [category_id], references: [category_id])
+  orderItems OrderItem[]
+  cartItems  CartItem[]
 }
 
 model Order {
@@ -91,4 +96,28 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+}
+
+model Cart {
+  cart_id     Int      @id @default(autoincrement())
+  customer_id Int      @unique
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  customer Customer   @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade)
+  items    CartItem[]
+}
+
+model CartItem {
+  cart_item_id Int      @id @default(autoincrement())
+  cart_id      Int
+  product_id   Int
+  quantity     Int
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  cart    Cart    @relation(fields: [cart_id], references: [cart_id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [product_id])
+
+  @@unique([cart_id, product_id])
 }
