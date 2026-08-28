@@ -19,6 +19,7 @@ import { UserRole } from '../auth/dto/register.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { OrderStatus } from '@prisma/client';
+import { OrderHistoryQueryDto } from './dto/order-history-query.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -31,11 +32,24 @@ export class OrdersController {
     return this.ordersService.create(dto, req.user);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('my-orders')
-  findMyOrders(@Req() req) {
-    return this.ordersService.findMyOrders(req.user.customerId);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.RETAILER)
+  findMyOrders(@Req() req, @Query() query: OrderHistoryQueryDto) {
+    return this.ordersService.findMyOrders(
+      req.user.customerId,
+      query.page,
+      query.limit,);
   }
+  @Get('my-orders/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.RETAILER)
+  findMyOrderById(@Param('id') id: string, @Req() req) {
+    return this.ordersService.findMyOrderById(
+    +id,
+    req.user.customerId,
+  );
+}
 
   @Roles(UserRole.ADMIN, UserRole.WHOLESALER)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -49,6 +63,8 @@ export class OrdersController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.WHOLESALER)
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(+id);
   }
