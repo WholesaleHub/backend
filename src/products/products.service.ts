@@ -85,7 +85,14 @@ export class ProductsService {
   }
 
   async findAll(query: QueryProductDto) {
-    const { search, category, availability, page, limit } = query;
+    const { search, 
+      category, 
+      availability,  
+      minPrice,
+      maxPrice,
+      page, 
+      limit 
+    } = query;
 
     const currentPage = page ?? 1;
     const currentLimit = limit ?? 10;
@@ -118,6 +125,22 @@ export class ProductsService {
     if (availability === 'IN_STOCK') {
       where.stock_quantity = {
         gt: 20,
+      };
+    }
+    if (
+      minPrice !== undefined &&
+      maxPrice !== undefined &&
+      minPrice > maxPrice
+    ) {
+      throw new BadRequestException(
+        'Minimum price cannot be greater than maximum price',
+      );
+    }
+    
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.unit_price = {
+        ...(minPrice !== undefined && { gte: minPrice }),
+        ...(maxPrice !== undefined && { lte: maxPrice }),
       };
     }
     const total = await this.prisma.product.count({

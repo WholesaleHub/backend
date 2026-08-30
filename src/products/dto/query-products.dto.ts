@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Min, MaxLength } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, Min, MaxLength, IsNumber } from 'class-validator';
 
 export class QueryProductDto {
   @IsOptional()
@@ -9,11 +9,25 @@ export class QueryProductDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
+  @Min(1)
   category?: number;
 
   @IsOptional()
   @IsString()
+  @IsIn(['IN_STOCK', 'LOW_STOCK', 'OUT_OF_STOCK'])
   availability?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  minPrice?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  maxPrice?: number;
 
   @IsOptional()
   @Type(() => Number)
