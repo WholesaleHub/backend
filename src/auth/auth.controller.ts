@@ -5,6 +5,9 @@ import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles.guard';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -33,4 +36,21 @@ export class AuthController {
         message: 'Welcome Admin!',
   };
 }
+
+    @Post('forgot-password')
+    forgotPassword(@Body() dto: ForgotPasswordDto) {
+        return this.authService.requestPasswordReset(dto.email);
+    }
+
+    @Post('reset-password')
+    resetPassword(@Body() dto: ResetPasswordDto) {
+        return this.authService.resetPassword(
+            dto.token,
+            dto.newPassword,
+        );
+    }
+    @Post('verify-email')
+    verifyEmail(@Body() dto: VerifyEmailDto) {
+        return this.authService.verifyEmail(dto.token);
+    }
 }
