@@ -49,22 +49,22 @@ describe('ProductsService', () => {
           stock_quantity: 10,
         },
       ];
-  
+
       mockPrismaService.product.count.mockResolvedValue(2);
       mockPrismaService.product.findMany.mockResolvedValue(products);
-  
+
       const result = await service.findAll({
         page: 1,
         limit: 10,
       });
-  
+
       expect(result.meta).toEqual({
         total: 2,
         page: 1,
         limit: 10,
         totalPages: 1,
       });
-  
+
       expect(result.data).toEqual([
         {
           ...products[0],
@@ -75,7 +75,7 @@ describe('ProductsService', () => {
           stock_status: 'LOW_STOCK',
         },
       ]);
-  
+
       expect(mockPrismaService.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           skip: 0,
@@ -86,13 +86,13 @@ describe('ProductsService', () => {
     it('should search products by name', async () => {
       mockPrismaService.product.count.mockResolvedValue(1);
       mockPrismaService.product.findMany.mockResolvedValue([]);
-    
+
       await service.findAll({
         search: 'milk',
         page: 1,
         limit: 10,
       });
-    
+
       expect(mockPrismaService.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
@@ -104,17 +104,17 @@ describe('ProductsService', () => {
         }),
       );
     });
-    
+
     it('should filter products by category', async () => {
       mockPrismaService.product.count.mockResolvedValue(1);
       mockPrismaService.product.findMany.mockResolvedValue([]);
-    
+
       await service.findAll({
         category: 2,
         page: 1,
         limit: 10,
       });
-    
+
       expect(mockPrismaService.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
@@ -123,17 +123,17 @@ describe('ProductsService', () => {
         }),
       );
     });
-    
+
     it('should filter products by availability', async () => {
       mockPrismaService.product.count.mockResolvedValue(1);
       mockPrismaService.product.findMany.mockResolvedValue([]);
-    
+
       await service.findAll({
         availability: 'LOW_STOCK',
         page: 1,
         limit: 10,
       });
-    
+
       expect(mockPrismaService.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
@@ -145,18 +145,18 @@ describe('ProductsService', () => {
         }),
       );
     });
-    
+
     it('should filter products by price range', async () => {
       mockPrismaService.product.count.mockResolvedValue(1);
       mockPrismaService.product.findMany.mockResolvedValue([]);
-    
+
       await service.findAll({
         minPrice: 100,
         maxPrice: 500,
         page: 1,
         limit: 10,
       });
-    
+
       expect(mockPrismaService.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
@@ -168,11 +168,11 @@ describe('ProductsService', () => {
         }),
       );
     });
-    
+
     it('should combine search, category, availability and price filters', async () => {
       mockPrismaService.product.count.mockResolvedValue(1);
       mockPrismaService.product.findMany.mockResolvedValue([]);
-    
+
       await service.findAll({
         search: 'milk',
         category: 2,
@@ -182,7 +182,7 @@ describe('ProductsService', () => {
         page: 2,
         limit: 20,
       });
-    
+
       expect(mockPrismaService.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
@@ -204,7 +204,7 @@ describe('ProductsService', () => {
         }),
       );
     });
-    
+
     it('should reject when minimum price is greater than maximum price', async () => {
       await expect(
         service.findAll({
@@ -214,7 +214,7 @@ describe('ProductsService', () => {
           limit: 10,
         }),
       ).rejects.toThrow('Minimum price cannot be greater than maximum price');
-    
+
       expect(mockPrismaService.product.count).not.toHaveBeenCalled();
       expect(mockPrismaService.product.findMany).not.toHaveBeenCalled();
     });

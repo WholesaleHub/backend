@@ -132,9 +132,9 @@ describe('OrdersService', () => {
     it("should prevent access to another customer's order", async () => {
       prisma.order.findFirst.mockResolvedValue(null);
 
-      await expect(
-        service.findMyOrderById(12, 5),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.findMyOrderById(12, 5)).rejects.toThrow(
+        NotFoundException,
+      );
 
       expect(prisma.order.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({

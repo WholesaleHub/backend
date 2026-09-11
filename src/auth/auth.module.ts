@@ -18,8 +18,8 @@ import { RolesGuard } from './guards/roles.guard';
       },
     }),
   ],
-    controllers: [AuthController],
+  controllers: [AuthController],
   providers: [AuthService, PrismaService, JwtStrategy, RolesGuard],
-  exports: [AuthService],  
+  exports: [AuthService],
 })
 export class AuthModule {}

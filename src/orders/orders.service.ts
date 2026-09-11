@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from '@prisma/client';
 
@@ -67,7 +66,7 @@ export class OrdersService {
             },
           },
         });
-        
+
         if (updated.count !== 1) {
           throw new BadRequestException(
             `Insufficient stock for "${product.product_name}".`,
@@ -105,17 +104,28 @@ export class OrdersService {
             product: true,
           },
         },
-        createdBy: true,
+        createdBy: {
+          select: {
+            id: true,
+            full_name: true,
+            email: true,
+            phone: true,
+            role: true,
+            status: true,
+            is_verified: true,
+            created_at: true,
+          },
+        },
       },
     });
   }
   async findMyOrders(customerId: number, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
-  
+
     const where = {
       customer_id: customerId,
     };
-  
+
     const [orders, total] = await this.prisma.$transaction([
       this.prisma.order.findMany({
         where,
@@ -133,12 +143,12 @@ export class OrdersService {
         skip,
         take: limit,
       }),
-  
+
       this.prisma.order.count({
         where,
       }),
     ]);
-  
+
     return {
       data: orders,
       pagination: {
@@ -164,15 +174,15 @@ export class OrdersService {
         },
       },
     });
-  
+
     if (!order) {
       throw new NotFoundException('Order not found.');
     }
-  
+
     return order;
   }
   async findOne(id: number) {
-    return this.prisma.order.findUnique({
+    const order = await this.prisma.order.findUnique({
       where: {
         order_id: id,
       },
@@ -183,11 +193,27 @@ export class OrdersService {
             product: true,
           },
         },
-        createdBy: true,
+        createdBy: {
+          select: {
+            id: true,
+            full_name: true,
+            email: true,
+            phone: true,
+            role: true,
+            status: true,
+            is_verified: true,
+            created_at: true,
+          },
+        },
       },
     });
-  }
 
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return order;
+  }
   async findAllOrders(
     status?: OrderStatus,
     customer?: string,
@@ -218,7 +244,18 @@ export class OrdersService {
           },
         },
 
-        createdBy: true,
+        createdBy: {
+          select: {
+            id: true,
+            full_name: true,
+            email: true,
+            phone: true,
+            role: true,
+            status: true,
+            is_verified: true,
+            created_at: true,
+          },
+        },
       },
 
       orderBy: {
@@ -227,29 +264,74 @@ export class OrdersService {
     });
   }
 
-  async update(id: number, updateOrderDto: UpdateOrderDto) {
-    return this.prisma.order.update({
+  async remove(id: number) {
+    const order = await this.prisma.order.findUnique({
       where: {
         order_id: id,
       },
-      data: updateOrderDto,
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    if (order.status !== OrderStatus.CANCELLED) {
+      throw new BadRequestException('Only cancelled orders can be deleted');
+    }
+
+    return this.prisma.order.delete({
+      where: {
+        order_id: id,
+      },
     });
   }
 
-  async remove(id: number) {
-    try {
-      return this.prisma.order.delete({
-        where: {
-          order_id: id,
-        },
-      });
-    } catch (error) {
-      console.log(JSON.stringify(error, null, 2));
-      throw error;
-    }
-  }
-
   async updateStatus(id: number, dto: UpdateOrderStatusDto) {
+    const order = await this.prisma.order.findUnique({
+      where: {
+        order_id: id,
+      },
+      include: {
+        orderItems: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    // Prevent a cancelled order from being changed again
+    if (order.status === OrderStatus.CANCELLED) {
+      throw new BadRequestException('Cancelled order cannot be updated');
+    }
+
+    // Restore inventory when cancelling the order
+    if (dto.status === OrderStatus.CANCELLED) {
+      return this.prisma.$transaction(async (tx) => {
+        for (const item of order.orderItems) {
+          await tx.product.update({
+            where: {
+              product_id: item.product_id,
+            },
+            data: {
+              stock_quantity: {
+                increment: item.quantity,
+              },
+            },
+          });
+        }
+
+        return tx.order.update({
+          where: {
+            order_id: id,
+          },
+          data: {
+            status: OrderStatus.CANCELLED,
+          },
+        });
+      });
+    }
+
     return this.prisma.order.update({
       where: {
         order_id: id,

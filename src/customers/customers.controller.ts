@@ -18,15 +18,13 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../auth/dto/register.dto';
 import { QueryCustomersDto } from './dto/query-customers.dto';
 import { ChangeCustomerStatusDto } from './dto/change-customer-status.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Customers')
+@ApiBearerAuth('bearer')
 @Controller('customers')
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
-
-  @Post()
-  create() {
-    return 'Create customer';
-  }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)

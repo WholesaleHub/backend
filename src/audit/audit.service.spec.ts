@@ -88,11 +88,7 @@ describe('AuditService', () => {
 
       prisma.auditLog.create.mockResolvedValue(auditLog);
 
-      const result = await service.create(
-        'admin-1',
-        'VIEW_USERS',
-        'USER',
-      );
+      const result = await service.create('admin-1', 'VIEW_USERS', 'USER');
 
       expect(prisma.auditLog.create).toHaveBeenCalledWith({
         data: {
@@ -193,11 +189,7 @@ describe('AuditService', () => {
       prisma.auditLog.findMany.mockResolvedValue(auditLogs);
       prisma.auditLog.count.mockResolvedValue(1);
 
-      const result = await service.findAll(
-        1,
-        10,
-        'UPDATE_USER_STATUS',
-      );
+      const result = await service.findAll(1, 10, 'UPDATE_USER_STATUS');
 
       expect(prisma.auditLog.findMany).toHaveBeenCalledWith({
         where: {

@@ -26,6 +26,7 @@
     "@nestjs/mapped-types": "^2.1.1",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.28",
+    "@nestjs/swagger": "^11.4.7",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^6.19.3",
     "bcrypt": "^6.0.0",
@@ -80,7 +81,7 @@
     ],
     "rootDir": "src",
     "moduleNameMapper": {
-    "^src/(.*)$": "<rootDir>/$1"
+      "^src/(.*)$": "<rootDir>/$1"
     },
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {

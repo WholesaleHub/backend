@@ -139,70 +139,66 @@ export class DashboardService {
   }
   async getSalesAnalytics(startDate?: string, endDate?: string) {
     const where: any = {};
-  
+
     if (startDate || endDate) {
       where.order_date = {};
-  
+
       if (startDate) {
         where.order_date.gte = new Date(startDate);
       }
-  
+
       if (endDate) {
         const end = new Date(endDate);
         end.setHours(23, 59, 59, 999);
         where.order_date.lte = end;
       }
     }
-  
-    const [
-      totalOrders,
-      revenue,
-      ordersByStatus,
-      salesOverTime,
-    ] = await Promise.all([
-      this.prisma.order.count({
-        where,
-      }),
-  
-      this.prisma.order.aggregate({
-        where,
-        _sum: {
-          total_amount: true,
-        },
-      }),
-  
-      this.prisma.order.groupBy({
-        by: ['status'],
-        where,
-        _count: {
-          order_id: true,
-        },
-      }),
-  
-      this.prisma.order.groupBy({
-        by: ['order_date'],
-        where,
-        _sum: {
-          total_amount: true,
-        },
-        _count: {
-          order_id: true,
-        },
-        orderBy: {
-          order_date: 'asc',
-        },
-      }),
-    ]);
-  
+
+    const [totalOrders, revenue, ordersByStatus, salesOverTime] =
+      await Promise.all([
+        this.prisma.order.count({
+          where,
+        }),
+
+        this.prisma.order.aggregate({
+          where,
+          _sum: {
+            total_amount: true,
+          },
+        }),
+
+        this.prisma.order.groupBy({
+          by: ['status'],
+          where,
+          _count: {
+            order_id: true,
+          },
+        }),
+
+        this.prisma.order.groupBy({
+          by: ['order_date'],
+          where,
+          _sum: {
+            total_amount: true,
+          },
+          _count: {
+            order_id: true,
+          },
+          orderBy: {
+            order_date: 'asc',
+          },
+        }),
+      ]);
+
     return {
       totalRevenue: revenue._sum.total_amount ?? 0,
       totalOrders,
-  
+
       ordersByStatus: ordersByStatus.map((item) => ({
         status: item.status,
         count: item._count.order_id,
       })),
-  
+
       salesOverTime: salesOverTime.map((item) => ({
         date: item.order_date,
         revenue: item._sum.total_amount ?? 0,
@@ -227,7 +223,7 @@ export class DashboardService {
       },
       take: limit,
     });
-  
+
     const products = await this.prisma.product.findMany({
       where: {
         product_id: {
@@ -242,12 +238,12 @@ export class DashboardService {
         stock_quantity: true,
       },
     });
-  
+
     return groupedProducts.map((item) => {
       const product = products.find(
         (product) => product.product_id === item.product_id,
       );
-  
+
       return {
         productId: item.product_id,
         productName: product?.product_name,
@@ -286,7 +282,7 @@ export class DashboardService {
         stock_quantity: 'asc',
       },
     });
-  
+
     return products.map((product) => ({
       productId: product.product_id,
       productName: product.product_name,
@@ -294,33 +290,32 @@ export class DashboardService {
       unitPrice: product.unit_price,
       stockQuantity: product.stock_quantity,
       category: product.category,
-      stockStatus:
-        product.stock_quantity === 0 ? 'OUT_OF_STOCK' : 'LOW_STOCK',
+      stockStatus: product.stock_quantity === 0 ? 'OUT_OF_STOCK' : 'LOW_STOCK',
     }));
   }
 
   async getCustomerAnalytics(startDate?: string, endDate?: string) {
     const where: any = {};
-  
+
     if (startDate || endDate) {
       where.created_at = {};
-  
+
       if (startDate) {
         where.created_at.gte = new Date(startDate);
       }
-  
+
       if (endDate) {
         const end = new Date(endDate);
         end.setHours(23, 59, 59, 999);
         where.created_at.lte = end;
       }
     }
-  
+
     const [totalCustomers, filteredCustomers, recentCustomers] =
       await Promise.all([
         // Total customers in the whole system
         this.prisma.customer.count(),
-  
+
         // Customers created within the selected period
         this.prisma.customer.findMany({
           where,
@@ -336,7 +331,7 @@ export class DashboardService {
             created_at: 'asc',
           },
         }),
-  
+
         // Most recently registered customers
         this.prisma.customer.findMany({
           take: 5,
@@ -352,11 +347,11 @@ export class DashboardService {
           },
         }),
       ]);
-  
+
     return {
       totalCustomers,
       newCustomers: filteredCustomers.length,
-  
+
       newCustomersOverTime: filteredCustomers.map((customer) => ({
         customerId: customer.customer_id,
         businessName: customer.business_name,
@@ -365,7 +360,7 @@ export class DashboardService {
         status: customer.status,
         createdAt: customer.created_at,
       })),
-  
+
       recentCustomers,
     };
   }
@@ -399,7 +394,7 @@ export class DashboardService {
         },
       },
     });
-  
+
     return recentOrders.map((order) => ({
       orderId: order.order_id,
       orderDate: order.order_date,

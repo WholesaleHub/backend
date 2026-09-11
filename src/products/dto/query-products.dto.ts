@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, Min, MaxLength, IsNumber } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Min,
+  MaxLength,
+  IsNumber,
+} from 'class-validator';
 
 export class QueryProductDto {
   @IsOptional()

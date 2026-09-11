@@ -14,7 +14,19 @@ import { UsersModule } from './users/users.module';
 import { AuditModule } from './audit/audit.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, CategoriesModule, ProductsModule, DashboardModule, ImageModule, OrdersModule, CustomersModule, CartModule, UsersModule, AuditModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    CategoriesModule,
+    ProductsModule,
+    DashboardModule,
+    ImageModule,
+    OrdersModule,
+    CustomersModule,
+    CartModule,
+    UsersModule,
+    AuditModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

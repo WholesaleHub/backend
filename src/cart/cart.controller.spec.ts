@@ -92,10 +92,7 @@ describe('CartController', () => {
 
       cartService.addItem.mockResolvedValue(mockCart);
 
-      const result = await controller.addItem(
-        mockRequest as any,
-        dto,
-      );
+      const result = await controller.addItem(mockRequest as any, dto);
 
       expect(cartService.addItem).toHaveBeenCalledWith(4, dto);
       expect(cartService.addItem).toHaveBeenCalledTimes(1);
@@ -131,11 +128,7 @@ describe('CartController', () => {
         dto,
       );
 
-      expect(cartService.updateItem).toHaveBeenCalledWith(
-        4,
-        cartItemId,
-        dto,
-      );
+      expect(cartService.updateItem).toHaveBeenCalledWith(4, cartItemId, dto);
 
       expect(result).toEqual(mockCart);
     });
@@ -158,10 +151,7 @@ describe('CartController', () => {
         cartItemId.toString(),
       );
 
-      expect(cartService.removeItem).toHaveBeenCalledWith(
-        4,
-        cartItemId,
-      );
+      expect(cartService.removeItem).toHaveBeenCalledWith(4, cartItemId);
 
       expect(result).toEqual(mockCart);
     });
