@@ -18,24 +18,24 @@ describe('AuthService', () => {
       create: jest.fn(),
       update: jest.fn(),
     },
-  
+
     customer: {
       create: jest.fn(),
     },
-  
+
     passwordResetToken: {
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       updateMany: jest.fn(),
     },
-  
+
     verificationToken: {
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
     },
-  
+
     $transaction: jest.fn(),
   };
 
@@ -79,20 +79,18 @@ describe('AuthService', () => {
       status: 'ACTIVE',
       is_verified: false,
     };
-  
+
     mockPrismaService.user.findUnique.mockResolvedValue(user);
-  
+
     (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-  
+
     await expect(
       service.login({
         email: 'test@example.com',
         password: 'Password123!',
       }),
-    ).rejects.toThrow(
-      'Please verify your email before logging in',
-    );
-  
+    ).rejects.toThrow('Please verify your email before logging in');
+
     expect(mockJwtService.signAsync).not.toHaveBeenCalled();
   });
 
@@ -107,18 +105,18 @@ describe('AuthService', () => {
       status: 'ACTIVE',
       is_verified: true,
     };
-  
+
     mockPrismaService.user.findUnique.mockResolvedValue(user);
-  
+
     (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-  
+
     mockJwtService.signAsync.mockResolvedValue('test-access-token');
-  
+
     const result = await service.login({
       email: 'verified@example.com',
       password: 'Password123!',
     });
-  
+
     expect(result).toEqual({
       message: 'Login Successful',
       accessToken: 'test-access-token',
@@ -131,7 +129,7 @@ describe('AuthService', () => {
         status: 'ACTIVE',
       },
     });
-  
+
     expect(mockJwtService.signAsync).toHaveBeenCalledWith({
       sub: 'user-1',
       email: 'verified@example.com',
@@ -147,26 +145,24 @@ describe('AuthService', () => {
       expires_at: new Date(Date.now() + 60 * 60 * 1000),
       used_at: null,
     };
-  
+
     mockPrismaService.verificationToken.findUnique.mockResolvedValue(
       verificationToken,
     );
-  
+
     mockPrismaService.$transaction.mockResolvedValue([
       { is_verified: true },
       { ...verificationToken, used_at: new Date() },
     ]);
-  
+
     const result = await service.verifyEmail('valid-token');
-  
+
     expect(result).toEqual({
       message: 'Email verified successfully',
     });
-  
-    expect(
-      mockPrismaService.verificationToken.findUnique,
-    ).toHaveBeenCalled();
-  
+
+    expect(mockPrismaService.verificationToken.findUnique).toHaveBeenCalled();
+
     expect(mockPrismaService.user.update).toHaveBeenCalledWith({
       where: {
         id: 'user-1',
@@ -175,10 +171,8 @@ describe('AuthService', () => {
         is_verified: true,
       },
     });
-  
-    expect(
-      mockPrismaService.verificationToken.update,
-    ).toHaveBeenCalledWith({
+
+    expect(mockPrismaService.verificationToken.update).toHaveBeenCalledWith({
       where: {
         id: 1,
       },
@@ -186,7 +180,7 @@ describe('AuthService', () => {
         used_at: expect.any(Date),
       },
     });
-  
+
     expect(mockPrismaService.$transaction).toHaveBeenCalled();
   });
 
@@ -198,23 +192,19 @@ describe('AuthService', () => {
       expires_at: new Date(Date.now() - 60 * 60 * 1000),
       used_at: null,
     };
-  
+
     mockPrismaService.verificationToken.findUnique.mockResolvedValue(
       expiredToken,
     );
-  
-    await expect(
-      service.verifyEmail('expired-token'),
-    ).rejects.toThrow(
+
+    await expect(service.verifyEmail('expired-token')).rejects.toThrow(
       'Invalid or expired verification token',
     );
-  
+
     expect(mockPrismaService.user.update).not.toHaveBeenCalled();
-  
-    expect(
-      mockPrismaService.verificationToken.update,
-    ).not.toHaveBeenCalled();
-  
+
+    expect(mockPrismaService.verificationToken.update).not.toHaveBeenCalled();
+
     expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
   });
 
@@ -226,23 +216,17 @@ describe('AuthService', () => {
       expires_at: new Date(Date.now() + 60 * 60 * 1000),
       used_at: new Date(),
     };
-  
-    mockPrismaService.verificationToken.findUnique.mockResolvedValue(
-      usedToken,
-    );
-  
-    await expect(
-      service.verifyEmail('used-token'),
-    ).rejects.toThrow(
+
+    mockPrismaService.verificationToken.findUnique.mockResolvedValue(usedToken);
+
+    await expect(service.verifyEmail('used-token')).rejects.toThrow(
       'Invalid or expired verification token',
     );
-  
+
     expect(mockPrismaService.user.update).not.toHaveBeenCalled();
-  
-    expect(
-      mockPrismaService.verificationToken.update,
-    ).not.toHaveBeenCalled();
-  
+
+    expect(mockPrismaService.verificationToken.update).not.toHaveBeenCalled();
+
     expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
   });
 
@@ -253,29 +237,27 @@ describe('AuthService', () => {
       email: 'test@example.com',
       password_hash: 'hashed-password',
     };
-  
+
     mockPrismaService.user.findUnique.mockResolvedValue(user);
-  
+
     mockPrismaService.passwordResetToken.updateMany.mockResolvedValue({
       count: 1,
     });
-  
+
     mockPrismaService.passwordResetToken.create.mockResolvedValue({
       id: 1,
     });
-  
-    const result = await service.requestPasswordReset(
-      'test@example.com',
-    );
-  
+
+    const result = await service.requestPasswordReset('test@example.com');
+
     expect(result.message).toBe(
       'If an account with that email exists, a password reset link has been generated.',
     );
-  
+
     // Temporary token should currently be returned for Postman testing.
     expect(result.resetToken).toEqual(expect.any(String));
     expect(result.resetToken).toHaveLength(64);
-  
+
     // Previous unused tokens should be invalidated.
     expect(
       mockPrismaService.passwordResetToken.updateMany,
@@ -288,11 +270,9 @@ describe('AuthService', () => {
         used_at: expect.any(Date),
       },
     });
-  
+
     // A new hashed reset token should be stored.
-    expect(
-      mockPrismaService.passwordResetToken.create,
-    ).toHaveBeenCalledWith({
+    expect(mockPrismaService.passwordResetToken.create).toHaveBeenCalledWith({
       data: {
         token_hash: expect.any(String),
         expires_at: expect.any(Date),
@@ -303,23 +283,19 @@ describe('AuthService', () => {
 
   it('should return the same response when password reset email does not exist', async () => {
     mockPrismaService.user.findUnique.mockResolvedValue(null);
-  
-    const result = await service.requestPasswordReset(
-      'unknown@example.com',
-    );
-  
+
+    const result = await service.requestPasswordReset('unknown@example.com');
+
     expect(result).toEqual({
       message:
         'If an account with that email exists, a password reset link has been generated.',
     });
-  
+
     expect(
       mockPrismaService.passwordResetToken.updateMany,
     ).not.toHaveBeenCalled();
-  
-    expect(
-      mockPrismaService.passwordResetToken.create,
-    ).not.toHaveBeenCalled();
+
+    expect(mockPrismaService.passwordResetToken.create).not.toHaveBeenCalled();
   });
 
   it('should reset password with a valid reset token', async () => {
@@ -334,40 +310,37 @@ describe('AuthService', () => {
         email: 'test@example.com',
       },
     };
-  
+
     mockPrismaService.passwordResetToken.findUnique.mockResolvedValue(
       resetToken,
     );
-  
+
     (bcrypt.hash as jest.Mock).mockResolvedValue('new-hashed-password');
-  
+
     mockPrismaService.user.update.mockReturnValue({
       id: 'user-1',
     });
-  
+
     mockPrismaService.passwordResetToken.update.mockReturnValue({
       id: 1,
     });
-  
+
     mockPrismaService.$transaction.mockResolvedValue([
       { id: 'user-1' },
       { id: 1 },
     ]);
-  
+
     const result = await service.resetPassword(
       'valid-reset-token',
       'NewPassword123!',
     );
-  
+
     expect(result).toEqual({
       message: 'Password reset successfully',
     });
-  
-    expect(bcrypt.hash).toHaveBeenCalledWith(
-      'NewPassword123!',
-      10,
-    );
-  
+
+    expect(bcrypt.hash).toHaveBeenCalledWith('NewPassword123!', 10);
+
     expect(mockPrismaService.user.update).toHaveBeenCalledWith({
       where: {
         id: 'user-1',
@@ -376,10 +349,8 @@ describe('AuthService', () => {
         password_hash: 'new-hashed-password',
       },
     });
-  
-    expect(
-      mockPrismaService.passwordResetToken.update,
-    ).toHaveBeenCalledWith({
+
+    expect(mockPrismaService.passwordResetToken.update).toHaveBeenCalledWith({
       where: {
         id: 1,
       },
@@ -387,7 +358,7 @@ describe('AuthService', () => {
         used_at: expect.any(Date),
       },
     });
-  
+
     expect(mockPrismaService.$transaction).toHaveBeenCalled();
   });
 });

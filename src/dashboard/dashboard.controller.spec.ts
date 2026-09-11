@@ -67,9 +67,7 @@ describe('DashboardController', () => {
         revenueSummary: 12262,
       };
 
-      mockDashboardService.getDashboardStats.mockResolvedValue(
-        expectedResult,
-      );
+      mockDashboardService.getDashboardStats.mockResolvedValue(expectedResult);
 
       const result = await controller.getDashboardStats();
 
@@ -87,9 +85,7 @@ describe('DashboardController', () => {
         salesOverTime: [],
       };
 
-      mockDashboardService.getSalesAnalytics.mockResolvedValue(
-        expectedResult,
-      );
+      mockDashboardService.getSalesAnalytics.mockResolvedValue(expectedResult);
 
       const result = await controller.getSalesAnalytics({});
 
@@ -113,9 +109,7 @@ describe('DashboardController', () => {
         salesOverTime: [],
       };
 
-      mockDashboardService.getSalesAnalytics.mockResolvedValue(
-        expectedResult,
-      );
+      mockDashboardService.getSalesAnalytics.mockResolvedValue(expectedResult);
 
       const result = await controller.getSalesAnalytics(query);
 
@@ -172,9 +166,7 @@ describe('DashboardController', () => {
         },
       ];
 
-      mockDashboardService.getTopProducts.mockResolvedValue(
-        expectedResult,
-      );
+      mockDashboardService.getTopProducts.mockResolvedValue(expectedResult);
 
       const result = await controller.getTopProducts();
 
@@ -271,9 +263,7 @@ describe('DashboardController', () => {
         },
       ];
 
-      mockDashboardService.getRecentOrders.mockResolvedValue(
-        expectedResult,
-      );
+      mockDashboardService.getRecentOrders.mockResolvedValue(expectedResult);
 
       const result = await controller.getRecentOrders();
 

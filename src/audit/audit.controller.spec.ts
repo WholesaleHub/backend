@@ -60,11 +60,7 @@ describe('AuditController', () => {
 
       const result = await controller.findAll(query);
 
-      expect(service.findAll).toHaveBeenCalledWith(
-        1,
-        10,
-        undefined,
-      );
+      expect(service.findAll).toHaveBeenCalledWith(1, 10, undefined);
 
       expect(service.findAll).toHaveBeenCalledTimes(1);
       expect(result).toEqual(expectedResult);
@@ -91,11 +87,7 @@ describe('AuditController', () => {
 
       const result = await controller.findAll(query);
 
-      expect(service.findAll).toHaveBeenCalledWith(
-        1,
-        10,
-        'UPDATE_USER_STATUS',
-      );
+      expect(service.findAll).toHaveBeenCalledWith(1, 10, 'UPDATE_USER_STATUS');
 
       expect(result).toEqual(expectedResult);
     });
@@ -118,11 +110,7 @@ describe('AuditController', () => {
 
       await controller.findAll(query);
 
-      expect(service.findAll).toHaveBeenCalledWith(
-        3,
-        5,
-        undefined,
-      );
+      expect(service.findAll).toHaveBeenCalledWith(3, 5, undefined);
     });
 
     it('should pass undefined values when query parameters are omitted', async () => {

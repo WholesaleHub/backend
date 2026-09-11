@@ -105,11 +105,7 @@ describe('UsersController', () => {
 
       await controller.findAll(query);
 
-      expect(service.findAll).toHaveBeenCalledWith(
-        'john',
-        undefined,
-        'ACTIVE',
-      );
+      expect(service.findAll).toHaveBeenCalledWith('john', undefined, 'ACTIVE');
     });
   });
 
@@ -138,11 +134,7 @@ describe('UsersController', () => {
 
       mockUsersService.updateStatus.mockResolvedValue(updatedUser);
 
-      const result = await controller.updateStatus(
-        userId,
-        dto,
-        req,
-      );
+      const result = await controller.updateStatus(userId, dto, req);
 
       expect(service.updateStatus).toHaveBeenCalledWith(
         userId,
@@ -171,11 +163,7 @@ describe('UsersController', () => {
         status: 'ACTIVE',
       });
 
-      await controller.updateStatus(
-        'user-5',
-        dto,
-        req,
-      );
+      await controller.updateStatus('user-5', dto, req);
 
       expect(service.updateStatus).toHaveBeenCalledWith(
         'user-5',

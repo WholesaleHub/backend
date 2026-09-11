@@ -8,10 +8,6 @@ import { CustomerStatus } from '@prisma/client';
 export class CustomersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create() {
-    throw new Error('Not implemented');
-  }
-
   async findAll(query: QueryCustomersDto) {
     const { page = 1, limit = 10, search, status } = query;
 
@@ -49,7 +45,18 @@ export class CustomersService {
     const customers = await this.prisma.customer.findMany({
       where,
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            full_name: true,
+            phone: true,
+            role: true,
+            status: true,
+            is_verified: true,
+            created_at: true,
+          },
+        },
       },
       skip,
       take: limit,
@@ -79,23 +86,49 @@ export class CustomersService {
         user_id: userId,
       },
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            full_name: true,
+            phone: true,
+            role: true,
+            status: true,
+            is_verified: true,
+            created_at: true,
+          },
+        },
       },
     });
   }
 
-  findOne(id: number) {
-    return this.prisma.customer.findUnique({
+  async findOne(id: number) {
+    const customer = await this.prisma.customer.findUnique({
       where: {
         customer_id: id,
       },
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            full_name: true,
+            phone: true,
+            role: true,
+            status: true,
+            is_verified: true,
+            created_at: true,
+          },
+        },
       },
     });
-  }
 
-  findByUser(userId: string) {}
+    if (!customer) {
+      throw new NotFoundException('Customer not found');
+    }
+
+    return customer;
+  }
 
   async update(userId: string, dto: UpdateCustomerDto) {
     const customer = await this.prisma.customer.findUnique({
@@ -117,7 +150,18 @@ export class CustomersService {
         phone: dto.phone,
       },
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            full_name: true,
+            phone: true,
+            role: true,
+            status: true,
+            is_verified: true,
+            created_at: true,
+          },
+        },
       },
     });
   }

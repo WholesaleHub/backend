@@ -5,7 +5,15 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/auth/dto/register.dto';
 import { DashboardService } from './dashboard.service';
 import { AnalyticsQueryDto } from './dto/analytics-query.dto';
+import {
+  ApiBearerAuth,
+  ApiTags,
+  ApiUnauthorizedResponse,
+  ApiForbiddenResponse,
+} from '@nestjs/swagger';
 
+@ApiTags('Dashboard')
+@ApiBearerAuth('bearer')
 @Controller('dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
@@ -58,15 +66,15 @@ export class DashboardController {
   @Get('customers')
   getCustomerAnalytics(@Query() query: AnalyticsQueryDto) {
     return this.dashboardService.getCustomerAnalytics(
-    query.startDate,
-    query.endDate,
-  );
-}
+      query.startDate,
+      query.endDate,
+    );
+  }
 
-@Roles('ADMIN')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Get('recent-orders')
-getRecentOrders() {
-  return this.dashboardService.getRecentOrders();
-}
+  @Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('recent-orders')
+  getRecentOrders() {
+    return this.dashboardService.getRecentOrders();
+  }
 }

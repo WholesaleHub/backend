@@ -53,9 +53,7 @@ describe('DashboardService', () => {
 
   describe('getStats', () => {
     it('should return product, category and low-stock counts', async () => {
-      prisma.product.count
-        .mockResolvedValueOnce(20)
-        .mockResolvedValueOnce(4);
+      prisma.product.count.mockResolvedValueOnce(20).mockResolvedValueOnce(4);
 
       prisma.category.count.mockResolvedValue(6);
 
@@ -84,9 +82,7 @@ describe('DashboardService', () => {
         .mockResolvedValueOnce(5)
         .mockResolvedValueOnce(3);
 
-      prisma.product.count
-        .mockResolvedValueOnce(10)
-        .mockResolvedValueOnce(2);
+      prisma.product.count.mockResolvedValueOnce(10).mockResolvedValueOnce(2);
 
       prisma.category.count.mockResolvedValue(4);
 
@@ -245,17 +241,13 @@ describe('DashboardService', () => {
         },
       });
 
-      prisma.order.groupBy
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([]);
+      prisma.order.groupBy.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
 
       await service.getSalesAnalytics('2026-08-01', '2026-08-31');
 
       const countCall = prisma.order.count.mock.calls[0][0];
 
-      expect(countCall.where.order_date.gte).toEqual(
-        new Date('2026-08-01'),
-      );
+      expect(countCall.where.order_date.gte).toEqual(new Date('2026-08-01'));
 
       expect(countCall.where.order_date.lte).toEqual(
         new Date('2026-08-31T23:59:59.999'),
@@ -271,9 +263,7 @@ describe('DashboardService', () => {
         },
       });
 
-      prisma.order.groupBy
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([]);
+      prisma.order.groupBy.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
 
       const result = await service.getSalesAnalytics();
 
@@ -444,17 +434,11 @@ describe('DashboardService', () => {
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce([]);
 
-      await service.getCustomerAnalytics(
-        '2026-08-01',
-        '2026-08-31',
-      );
+      await service.getCustomerAnalytics('2026-08-01', '2026-08-31');
 
-      const filteredCall =
-        prisma.customer.findMany.mock.calls[0][0];
+      const filteredCall = prisma.customer.findMany.mock.calls[0][0];
 
-      expect(filteredCall.where.created_at.gte).toEqual(
-        new Date('2026-08-01'),
-      );
+      expect(filteredCall.where.created_at.gte).toEqual(new Date('2026-08-01'));
 
       expect(filteredCall.where.created_at.lte).toEqual(
         new Date('2026-08-31T23:59:59.999'),
@@ -527,11 +511,7 @@ describe('DashboardService', () => {
           status: OrderStatus.PENDING,
           total_amount: 1000,
           customer: {},
-          orderItems: [
-            { quantity: 2 },
-            { quantity: 3 },
-            { quantity: 4 },
-          ],
+          orderItems: [{ quantity: 2 }, { quantity: 3 }, { quantity: 4 }],
         },
       ]);
 

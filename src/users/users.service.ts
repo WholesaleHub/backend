@@ -45,7 +45,7 @@ export class UsersService {
       },
     });
   }
-  
+
   async updateStatus(
     targetUserId: string,
     status: string,
@@ -56,11 +56,11 @@ export class UsersService {
         id: targetUserId,
       },
     });
-  
+
     if (!targetUser) {
       throw new NotFoundException('User not found');
     }
-  
+
     if (
       targetUser.id === currentUserId &&
       targetUser.role === 'ADMIN' &&
@@ -72,14 +72,14 @@ export class UsersService {
           status: 'ACTIVE',
         },
       });
-  
+
       if (activeAdmins <= 1) {
         throw new BadRequestException(
           'Cannot deactivate the only active administrator',
         );
       }
     }
-  
+
     const updatedUser = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.update({
         where: {
@@ -98,7 +98,7 @@ export class UsersService {
           created_at: true,
         },
       });
-  
+
       await tx.auditLog.create({
         data: {
           actor_id: currentUserId,
@@ -111,10 +111,10 @@ export class UsersService {
           },
         },
       });
-  
+
       return user;
     });
-  
+
     return updatedUser;
   }
 }

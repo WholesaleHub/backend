@@ -20,7 +20,15 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { OrderStatus } from '@prisma/client';
 import { OrderHistoryQueryDto } from './dto/order-history-query.dto';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('Orders')
+@ApiBearerAuth()
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
@@ -39,21 +47,34 @@ export class OrdersController {
     return this.ordersService.findMyOrders(
       req.user.customerId,
       query.page,
-      query.limit,);
+      query.limit,
+    );
   }
   @Get('my-orders/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.RETAILER)
   findMyOrderById(@Param('id') id: string, @Req() req) {
-    return this.ordersService.findMyOrderById(
-    +id,
-    req.user.customerId,
-  );
-}
+    return this.ordersService.findMyOrderById(+id, req.user.customerId);
+  }
 
   @Roles(UserRole.ADMIN, UserRole.WHOLESALER)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: OrderStatus,
+  })
+  @ApiQuery({
+    name: 'customer',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    enum: ['asc', 'desc'],
+  })
   findAllOrders(
     @Query('status') status?: OrderStatus,
     @Query('customer') customer?: string,
@@ -69,12 +90,6 @@ export class OrdersController {
     return this.ordersService.findOne(+id);
   }
 
-  @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.ordersService.update(+id, updateOrderDto);
-  }
-
   @Patch(':id/status')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.WHOLESALER)
@@ -83,6 +98,8 @@ export class OrdersController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.WHOLESALER)
   remove(@Param('id') id: string) {
     return this.ordersService.remove(+id);
   }

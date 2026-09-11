@@ -17,11 +17,7 @@ export const multerOptions = {
   },
 
   fileFilter: (req, file, callback) => {
-    const allowedMimeTypes = [
-      'image/jpeg',
-      'image/png',
-      'image/webp',
-    ];
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
     if (!allowedMimeTypes.includes(file.mimetype)) {
       return callback(
