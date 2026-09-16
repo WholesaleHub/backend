@@ -8,8 +8,6 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductDto } from './dto/query-products.dto';
 import { ImageService } from '../common/images/image.service';
-import { extname, join } from 'path';
-import * as fs from 'fs/promises';
 
 @Injectable()
 export class ProductsService {
@@ -32,36 +30,13 @@ export class ProductsService {
   private async processProductImage(
     file: Express.Multer.File,
   ): Promise<string> {
-    const extension = extname(file.path).toLowerCase();
-
-    const temporaryPath =
-      file.path.replace(extname(file.path), '') + `.tmp${extension}`;
-
-    await this.imageService.resizeProductImage(file.path, temporaryPath);
-
-    await fs.unlink(file.path);
-    await fs.rename(temporaryPath, file.path);
-
-    return `/uploads/products/${file.filename}`;
+    return this.imageService.uploadProductImage(file);
   }
 
-  private async deleteProductImage(imageUrl: string | null): Promise<void> {
-    if (!imageUrl || !imageUrl.startsWith('/uploads/products/')) {
-      return;
-    }
-
-    const relativePath = imageUrl.replace(/^\/+/, '');
-    const absolutePath = join(process.cwd(), relativePath);
-
-    try {
-      await fs.unlink(absolutePath);
-    } catch (error) {
-      const fileError = error as NodeJS.ErrnoException;
-
-      if (fileError.code !== 'ENOENT') {
-        throw error;
-      }
-    }
+  private async deleteProductImage(
+    imageUrl: string | null,
+  ): Promise<void> {
+    await this.imageService.deleteProductImage(imageUrl);
   }
   async create(createProductDto: CreateProductDto, file?: Express.Multer.File) {
     const category = await this.prisma.category.findUnique({

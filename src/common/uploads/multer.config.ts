@@ -1,23 +1,21 @@
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-import { randomUUID } from 'crypto';
+import { memoryStorage } from 'multer';
 
 export const multerOptions = {
-  storage: diskStorage({
-    destination: './uploads/products',
-
-    filename: (req, file, callback) => {
-      const filename = `${randomUUID()}${extname(file.originalname)}`;
-      callback(null, filename);
-    },
-  }),
-
+  storage: memoryStorage(),
   limits: {
     fileSize: 15 * 1024 * 1024, // 15 MB
   },
 
-  fileFilter: (req, file, callback) => {
-    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  fileFilter: (
+    req: Express.Request,
+    file: Express.Multer.File,
+    callback: (error: Error | null, acceptFile: boolean) => void,
+  ) => {
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+    ];
 
     if (!allowedMimeTypes.includes(file.mimetype)) {
       return callback(
