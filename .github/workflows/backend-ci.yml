@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/wholesalehub_test
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/wholesalehub_test
 
     steps:
