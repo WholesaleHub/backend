@@ -4,9 +4,29 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
+import { ProductsModule } from './products/products.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { ImageModule } from './common/images/image.module';
+import { OrdersModule } from './orders/orders.module';
+import { CustomersModule } from './customers/customers.module';
+import { CartModule } from './cart/cart.module';
+import { UsersModule } from './users/users.module';
+import { AuditModule } from './audit/audit.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, CategoriesModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    CategoriesModule,
+    ProductsModule,
+    DashboardModule,
+    ImageModule,
+    OrdersModule,
+    CustomersModule,
+    CartModule,
+    UsersModule,
+    AuditModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

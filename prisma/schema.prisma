@@ -8,18 +8,163 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  full_name     String   @db.VarChar(100)
-  email         String   @unique @db.VarChar(255)
-  password_hash String
-  phone         String?  @db.VarChar(20)
-  role          String   @default("RETAILER") @db.VarChar(20)
-  status        String   @default("ACTIVE") @db.VarChar(20)
-  created_at    DateTime @default(now()) @db.Timestamp(6)
+  email               String               @unique @db.VarChar(255)
+  created_at          DateTime             @default(now()) @db.Timestamp(6)
+  full_name           String               @db.VarChar(100)
+  password_hash       String
+  phone               String?              @db.VarChar(20)
+  role                String               @default("RETAILER") @db.VarChar(20)
+  status              String               @default("ACTIVE") @db.VarChar(20)
+  id                  String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  is_verified         Boolean              @default(false)
+  customer            Customer?
+  ordersCreated       Order[]              @relation("OrderCreator")
+  auditLogs           AuditLog[]           @relation("AuditActor")
+  passwordResetTokens PasswordResetToken[]
+  verificationTokens  VerificationToken[]
 }
+
+model PasswordResetToken {
+  id         Int       @id @default(autoincrement())
+  token_hash String    @unique @db.VarChar(64)
+  expires_at DateTime
+  used_at    DateTime?
+  created_at DateTime  @default(now())
+  user_id    String    @db.Uuid
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([expires_at])
+}
+
+model VerificationToken {
+  id         Int       @id @default(autoincrement())
+  token_hash String    @unique @db.VarChar(64)
+  expires_at DateTime
+  used_at    DateTime?
+  created_at DateTime  @default(now())
+  user_id    String    @db.Uuid
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([expires_at])
+}
+
+model Customer {
+  customer_id       Int            @id @default(autoincrement())
+  user_id           String         @unique @db.Uuid
+  business_name     String
+  business_location String
+  contact_person    String
+  phone             String
+  status            CustomerStatus @default(ACTIVE)
+  created_at        DateTime       @default(now())
+
+  user   User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  orders Order[]
+  cart   Cart?
+}
+
+enum CustomerStatus {
+  ACTIVE
+  SUSPENDED
+}
+
 model Category {
-  category_id   Int      @id @default(autoincrement())
-  category_name String   @unique
+  category_id   Int       @id @default(autoincrement())
+  category_name String    @unique
   description   String?
-  created_at    DateTime @default(now())
+  created_at    DateTime  @default(now())
+  products      Product[]
+}
+
+model Product {
+  product_id     Int      @id @default(autoincrement())
+  product_name   String
+  sku            String   @unique
+  category_id    Int
+  unit_price     Decimal  @db.Decimal(10, 2)
+  stock_quantity Int
+  status         String   @default("ACTIVE")
+  created_at     DateTime @default(now())
+  description    String?  @db.VarChar(1000)
+  image_url      String?  @db.VarChar(255)
+
+  category   Category    @relation(fields: [category_id], references: [category_id])
+  orderItems OrderItem[]
+  cartItems  CartItem[]
+}
+
+model Order {
+  order_id           Int         @id @default(autoincrement())
+  customer_id        Int
+  created_by_user_id String      @db.Uuid
+  order_date         DateTime    @default(now())
+  total_amount       Decimal     @default(0) @db.Decimal(10, 2)
+  created_at         DateTime    @default(now())
+  status             OrderStatus @default(PENDING)
+  createdBy          User        @relation("OrderCreator", fields: [created_by_user_id], references: [id])
+  customer           Customer    @relation(fields: [customer_id], references: [customer_id])
+  orderItems         OrderItem[]
+}
+
+model OrderItem {
+  order_item_id Int     @id @default(autoincrement())
+  order_id      Int
+  product_id    Int
+  quantity      Int
+  unit_price    Decimal @db.Decimal(10, 2)
+  subtotal      Decimal @db.Decimal(10, 2)
+  order         Order   @relation(fields: [order_id], references: [order_id], onDelete: Cascade)
+  product       Product @relation(fields: [product_id], references: [product_id])
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PACKED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model Cart {
+  cart_id     Int      @id @default(autoincrement())
+  customer_id Int      @unique
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  customer Customer   @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade)
+  items    CartItem[]
+}
+
+model CartItem {
+  cart_item_id Int      @id @default(autoincrement())
+  cart_id      Int
+  product_id   Int
+  quantity     Int
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  cart    Cart    @relation(fields: [cart_id], references: [cart_id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [product_id])
+
+  @@unique([cart_id, product_id])
+}
+
+model AuditLog {
+  audit_log_id Int      @id @default(autoincrement())
+  actor_id     String   @db.Uuid
+  action       String   @db.VarChar(100)
+  resource     String   @db.VarChar(100)
+  target_id    String?  @db.VarChar(255)
+  metadata     Json?
+  created_at   DateTime @default(now()) @db.Timestamp(6)
+
+  actor User @relation("AuditActor", fields: [actor_id], references: [id])
+
+  @@index([actor_id])
+  @@index([created_at])
 }
